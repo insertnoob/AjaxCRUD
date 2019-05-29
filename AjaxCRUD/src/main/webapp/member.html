@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>member.html</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<style type="text/css">
+.check {
+	color : red
+}
+</style>
+<script>
+let currentPage; //현재 페이지
+let totalBlock; // 총 블록 값
+let blockOfPage; // 현재 블록 값
+let rowPerPage; // 목록 갯수
+let a= [];
+$(document).ready(function(){
+	// 목록
+	$('#btnList').click(function(){
+		console.log('btnList 버튼 클릭 시 currnetPage : '+currentPage)
+		$.ajax({
+			url : '/getMembers',
+			type : 'get',
+			data : {currentPage:currentPage},
+			success : function(data){
+				// 리스트 초기화
+				$('#list').empty();
+				// 페이지 초기화
+				$('#paging').empty();
+				// 리턴값 만큼 #list에 뿌려주는 반복문
+				$(data.list).each(function(i, item){
+					$('#list').append('<tr>');
+					$('#list').append('<td><input type="checkbox" class="ck" value="'+item.id+'"></td>');
+					$('#list').append('<td>'+item.id+'</td>');
+					$('#list').append('<td>'+item.pw+'</td>');
+					$('#list').append('<td>'+item.name+'</td>');
+					$('#list').append('<td>'+item.age+'</td>');
+					$('#list').append('<td>'+item.gender+'</td>'); 
+					$('#list').append('</tr>');
+				});
+				currentPage = data.currentPage; // 현재 페이지 설정
+				totalBlock = data.totalBlock; // 총 블록 값 설정
+				blockOfPage = data.blockOfPage; // 현재 블록 값 설정
+				rowPerPage = data.rowPerPage; // 목록 갯수 설정
+				console.log('비동기 요청 성공 시 currentPage : '+currentPage);
+				console.log('totalBlock : '+totalBlock);
+				console.log('blockOfPage : '+blockOfPage);
+				console.log('rowPerPage : '+rowPerPage);
+				// blockOfPage 1이상일 경우 이전 버튼 표시
+				if(blockOfPage > 1){
+					console.log('조건문 속의 blockOfPage : '+blockOfPage);
+					$('#preBtn').show();
+				}else{
+					$('#preBtn').hide();
+				}
+				// blockOfPage가 totalBlock보다 작으면 다음 버튼 표시
+				if(blockOfPage < totalBlock){
+					$('#nextBtn').show();
+				}else{
+					$('#nextBtn').hide();
+				}
+				// currentPage=1~10 : i=1; i<10; i++
+				// currnetPage=11~20 : i=11; i<20; i++
+				for (var i = data.startPage; i <= data.endPage; i++) {
+					a=i;
+					$('#paging').append('<button type="button" class="blockOfPage" value="'+i+'">'+i+'</button>');
+				}
+			},
+			error : function(error){
+				alert('error : '+error);
+			}
+		});
+		
+	});
+	// 입력 박스에 값 입력 시 ~Check 텍스트 초기화
+	$('#id').on('change paste keyup', function() { 
+    	$('#idCheck').empty();
+    });
+	$('#pw').on('change paste keyup', function() { 
+    	$('#pwCheck').empty();
+    });
+	$('#name').on('change paste keyup', function() { 
+    	$('#nameCheck').empty();
+    });
+	$('#age').on('change paste keyup', function() { 
+    	$('#ageCheck').empty();
+    });
+	$('#gender').change(function(){
+		$('#genderCheck').empty();
+	});
+	
+    // 추가
+    $('#btnAdd').click(function(){
+		console.log('btnAdd 버튼 테스트')
+		// 아이디 정규식
+		// 영문 소문자, 숫자 4~12자리
+		let id = /^[a-z0-9]{4,12}$/;
+		// 비밀번호 정규식
+		// 영문 대소문자, 숫자 4~12자리
+		let pw = /^[A-Za-z0-9]{4,12}$/; 
+		// 이름 정규식
+		// 한글 2~6자리
+		let name = /^[가-힣]{2,6}$/;
+		// 나이 정규식
+		// 숫자 1~2자리
+		let age = /^[0-9]{1,2}/;
+		
+		// 공백 검사
+		if($('#id').val() == ""){
+			$('#idCheck').text("아이디를 입력하세요");
+		}
+		if($('#pw').val() == ""){
+			$('#pwCheck').text("비밀번호를 입력하세요");
+		}
+		if($('#name').val() == ""){
+			$('#nameCheck').text("이름을 입력하세요");
+		}
+		if($('#age').val() == ""){
+			$('#ageCheck').text("나이를 입력하세요");
+		}
+		if($('#gender').val() == ""){
+			$('#genderCheck').text("성별을 선택하세요");
+		}
+		// 정규식 표현 검사
+		else if(!id.test($('#id').val())){
+			$('#idCheck').text("올바른 아이디를 입력하세요");
+			$('#id').focus();
+		}else if(!pw.test($('#pw').val())){
+			$('#pwCheck').text("올바른 비밀번호를 입력하세요");
+			$('#pw').focus();
+		}else if(!name.test($('#name').val())){
+			$('#nameCheck').text("올바른 이름을 입력하세요");
+			$('#name').focus();
+		}else if(!age.test($('#age').val())){
+			$('#ageCheck').text("올바른 나이를 입력하세요");
+			$('#age').focus();
+		}else {
+			// 모든 값이 입력됐을 때 비동기 통신 요청
+			let id = $('#id').val();
+			let pw = $('#pw').val();
+			let name = $('#name').val();
+			let age = $('#age').val();
+			let gender = $('#gender').val();
+			
+			$.ajax({
+				url : '/addMember',
+				type : 'post',
+				data : {
+					id:id,
+					pw:pw,
+					name:name,
+					age:age,
+					gender:gender
+				},
+				success : function(data){
+					alert('입력 성공');
+					location.reload(); // 페이지 새로고침
+				},
+				error : function(error){
+					alert('입력 실패 : '+error);
+				}
+			});
+		}
+    });
+    //수정
+    $('#btnModify').click(function(){
+		console.log('btnModify 버튼 테스트')
+		// 아이디 정규식
+		// 영문 소문자, 숫자 4~12자리
+		let id = /^[a-z0-9]{4,12}$/;
+		// 비밀번호 정규식
+		// 영문 대소문자, 숫자 4~12자리
+		let pw = /^[A-Za-z0-9]{4,12}$/; 
+		// 이름 정규식
+		// 한글 2~6자리
+		let name = /^[가-힣]{2,6}$/;
+		// 나이 정규식
+		// 숫자 1~2자리
+		let age = /^[0-9]{1,2}/;
+		
+		// 공백 검사
+		if($('#id').val() == ""){
+			$('#idCheck').text("아이디를 입력하세요");
+		}
+		if($('#pw').val() == ""){
+			$('#pwCheck').text("비밀번호를 입력하세요");
+		}
+		if($('#name').val() == ""){
+			$('#nameCheck').text("이름을 입력하세요");
+		}
+		if($('#age').val() == ""){
+			$('#ageCheck').text("나이를 입력하세요");
+		}
+		if($('#gender').val() == ""){
+			$('#genderCheck').text("성별을 선택하세요");
+		}
+		// 정규식 표현 검사
+		else if(!id.test($('#id').val())){
+			$('#idCheck').text("올바른 아이디를 입력하세요");
+			$('#id').focus();
+		}else if(!pw.test($('#pw').val())){
+			$('#pwCheck').text("올바른 비밀번호를 입력하세요");
+			$('#pw').focus();
+		}else if(!name.test($('#name').val())){
+			$('#nameCheck').text("올바른 이름을 입력하세요");
+			$('#name').focus();
+		}else if(!age.test($('#age').val())){
+			$('#ageCheck').text("올바른 나이를 입력하세요");
+			$('#age').focus();
+		}else {
+			// 모든 값이 입력됐을 때 비동기 통신 요청
+			let id = $('#id').val();
+			let pw = $('#pw').val();
+			let name = $('#name').val();
+			let age = $('#age').val();
+			let gender = $('#gender').val();
+			
+			$.ajax({
+				url : '/modifyMember',
+				type : 'post',
+				data : {
+					id:id,
+					pw:pw,
+					name:name,
+					age:age,
+					gender:gender
+				},
+				success : function(data){
+					alert('수정 성공');
+					$('#btnList').trigger('click'); // 리스트 버튼 자동 클릭 이벤트 
+				},
+				error : function(error){
+					alert('수정 실패 : '+error);
+				}
+			});
+		}
+    });
+ 	// 삭제
+    $('#btnRemove').click(function(){
+		console.log('btnRemove 버튼 테스트')
+		let ck = [];
+		$('.ck:checked').each(function(i, item){
+            ck.push($(item).val());
+        });
+		$.ajax({
+			url : '/removeMember',
+			type : 'post',
+			data : {ck:ck},
+			success : function(data){
+				alert('삭제 성공');
+				$('#btnList').trigger('click'); // 리스트 버튼 자동 클릭 이벤트 
+			},
+			error : function(error){
+				alert('삭제 실패 : '+error);
+			}
+		});
+    });
+ 	// 이전 버튼 클릭
+ 	$('#preBtn').click(function(){
+		// currentPage = 11~20
+		// prePage = 10
+ 		currentPage = blockOfPage * rowPerPage - 10;
+ 		console.log('preBtn 버튼 클릭 시 currentPage : '+currentPage);
+ 		$('#btnList').trigger('click');
+ 	});
+ 	// 다음 버튼 클릭
+ 	$('#nextBtn').click(function(){
+ 		// currentPage = 1~10
+		// nextPage = 11
+ 		currentPage = blockOfPage * rowPerPage + 1;
+ 		console.log('nextBtn 버튼 클릭 시 currentPage : '+currentPage);
+ 		$('#btnList').trigger('click');
+ 	});
+ 	// 블록 페이지 클릭
+ 	$(document).on('click','.blockOfPage',function(){
+ 		console.log('blockOfPage value : '+$(this).attr('value'));
+ 		currentPage = $(this).attr('value');
+ 		$('#btnList').trigger('click');
+ 	});
+ 	$('#btnList').trigger('click'); // 리스트 버튼 자동 클릭 이벤트
+});
+</script>
+</head>
+<body>
+	<h1>Member</h1>
+	<table class="addTable">
+		<tr>
+			<th>id</th>
+			<td>
+				<input type="text" id="id"> 
+				<span class="check" id="idCheck"></span>
+			</td>
+			
+		</tr>
+		<tr>
+			<th>pw</th>
+			<td>
+				<input type="password" id="pw"> 
+				<span class="check" id="pwCheck"></span>
+			</td>
+			
+		</tr>
+		<tr>
+			<th>name</th>
+			<td>
+				<input type="text" id="name"> 
+				<span class="check" id="nameCheck"></span>
+			</td>
+		</tr>
+		<tr>
+			<th>age</th>
+			<td>
+				<input type="text" id="age"> 			
+				<span class="check" id="ageCheck"></span>
+			</td>
+		</tr>
+		<tr>
+			<th>gender</th>
+			<td>
+				<select id="gender">
+					<option value="">선택</option>
+					<option value="M">남</option>
+					<option value="F">여</option>
+				</select>
+				<span class="check" id="genderCheck"></span>
+			</td>
+		</tr>
+		<tr>
+			<th>추가</th>
+			<td><button type="button" id="btnAdd">add</button></td>
+		</tr>	
+		<tr>
+			<th>수정</th>
+			<td><button type="button" id="btnModify">modify</button></td>
+		</tr>
+	</table>
+	<br>
+	<button type="button" id="btnList">list</button>
+	<button type="button" id="btnRemove">remove</button>
+	<table border="1">
+		<thead>
+			<tr>
+				<th></th>
+				<th>id</th>
+				<th>pw</th>
+				<th>name</th>
+				<th>age</th>
+				<th>gender</th>
+			</tr>
+		</thead>
+		<tbody id="list">
+		</tbody>
+	</table>
+	<div>
+		<button type="button" id="preBtn">이전</button>
+		<span id="paging"></span>
+		<button type="button" id="nextBtn">다음</button>
+	</div>
+</body>
+
+</html>
