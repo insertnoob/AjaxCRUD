@@ -200,35 +200,21 @@ $(document).ready(function(){
     $('#btnModify').click(function(){
 		console.log('btnModify 버튼 테스트')
 		
-		// 공백 검사
-		if($('#id').val() == ""){
-			$('#idCheck').text("아이디를 입력하세요");
-		}
-		if($('#pw').val() == ""){
-			$('#pwCheck').text("비밀번호를 입력하세요");
-		}
-		if($('#name').val() == ""){
-			$('#nameCheck').text("이름을 입력하세요");
-		}
-		if($('#age').val() == ""){
-			$('#ageCheck').text("나이를 입력하세요");
-		}
-		if($('#gender').val() == ""){
-			$('#genderCheck').text("성별을 선택하세요");
-		}
-		// 정규식 표현 검사
-		else if(!id.test($('#id').val())){
-			$('#idCheck').text("올바른 아이디를 입력하세요");
+		if(idCheck == false){
+			$('#idCheck').text("아이디를 확인하세요");
 			$('#id').focus();
-		}else if(!pw.test($('#pw').val())){
-			$('#pwCheck').text("올바른 비밀번호를 입력하세요");
+		}else if(pwCheck == false){
+			$('#pwCheck').text("비밀번호를 확인하세요");
 			$('#pw').focus();
-		}else if(!name.test($('#name').val())){
-			$('#nameCheck').text("올바른 이름을 입력하세요");
+		}else if(nameCheck == false){
+			$('#nameCheck').text("이름을 확인하세요");
 			$('#name').focus();
-		}else if(!age.test($('#age').val())){
-			$('#ageCheck').text("올바른 나이를 입력하세요");
+		}else if(ageCheck == false){
+			$('#ageCheck').text("나이를 확인하세요");
 			$('#age').focus();
+		}else if(genderCheck == false){
+			$('#genderCheck').text("성별을 확인하세요");
+			$('#gender').focus();
 		}else {
 			// 모든 값이 입력됐을 때 비동기 통신 요청
 			let id = $('#id').val();
